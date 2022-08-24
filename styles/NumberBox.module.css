@@ -1,0 +1,8 @@
+.numberBox {
+    background-color: var(--color-bg-offset);
+    transition: box-shadow .2s ease-in;
+}
+
+.numberBoxTitle {
+    color: var(--color-text-offset);
+}

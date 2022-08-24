@@ -1,0 +1,24 @@
+.chartContainer {
+    background-color: var(--color-bg-offset);
+    transition: box-shadow 0.2s ease-in;
+}
+
+.chartContainer {
+    width: 50%;
+}
+
+@media screen and (max-width: 1024px) {
+    .chartContainer {
+        width: 100%;
+    }
+}
+
+@media screen and (min-width: 1300px) {
+    .chartContainer:nth-of-type(odd) {
+        width: 60%;
+    }
+
+    .chartContainer:nth-of-type(even) {
+        width: 40%;
+    }
+}

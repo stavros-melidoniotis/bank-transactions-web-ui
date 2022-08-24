@@ -1,241 +1,398 @@
-import Head from 'next/head'
-import clientPromise from '../lib/mongodb'
+import NumberBox from '../components/NumberBox'
+import ChartContainer from '../components/ChartContainer'
+import { getSession } from 'next-auth/react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { useState, useEffect } from 'react'
+import {
+  faHandHoldingDollar,
+  faBagShopping,
+  faCircleDollarToSlot,
+  faAnglesUp,
+  faAnglesDown
+} from '@fortawesome/free-solid-svg-icons'
+import Header from '../components/Header'
 
-export default function Home({ isConnected }) {
+export default function Home({ isConnected, transactions, session }) {
+  const months = {
+    1: "January",
+    2: "February",
+    3: "March",
+    4: "April",
+    5: "May",
+    6: "June",
+    7: "July",
+    8: "August",
+    9: "September",
+    10: "October",
+    11: "November",
+    12: "December"
+  }
+
+  console.log(session);
+
+  const [darkThemeEnabled, setDarkThemeEnabled] = useState(true)
+  const [transactionsIndex, setTransactionsIndex] = useState(transactions.length - 1)
+
+  const selectedMonth = transactions[transactionsIndex].month
+  const selectedYear = transactions[transactionsIndex].year
+  const transactionsToShow = transactions.filter(transaction => transaction.month === selectedMonth)[0]
+  const transactionsToCompare = transactionsIndex === 0 ? null : transactions.filter(transaction => transaction.month === transactions[transactionsIndex - 1].month)[0]
+
+  let mixedChartSeries
+  let commonTransactionCategories
+
+  if (transactionsToCompare) {
+    commonTransactionCategories = Object.keys(transactionsToShow.total_transactions_per_category).filter(key => key in transactionsToCompare.total_transactions_per_category)
+
+    const getCommonTransactions = (currentTransactions, previousTransactions) => {
+      const commonTransactionsFromCurrent = []
+      const commonTransactionsFromPrevious = []
+
+      for (const [key, value] of Object.entries(currentTransactions.total_transactions_per_category)) {
+        if (!commonTransactionCategories?.includes(key)) continue
+
+        commonTransactionsFromCurrent.push(value)
+      }
+
+      for (const [key, value] of Object.entries(previousTransactions.total_transactions_per_category)) {
+        if (!commonTransactionCategories?.includes(key)) continue
+
+        commonTransactionsFromPrevious.push(value)
+      }
+
+      return [commonTransactionsFromCurrent, commonTransactionsFromPrevious]
+    }
+
+    const [commonTransactionsFromCurrent, commonTransactionsFromPrevious] = getCommonTransactions(transactionsToShow, transactionsToCompare)
+
+    mixedChartSeries = [{
+      name: `${months[selectedMonth]} ${selectedYear}`,
+      type: 'column',
+      data: commonTransactionsFromCurrent
+    },
+    {
+      name: `${months[transactionsToCompare.month]} ${transactionsToCompare.year}`,
+      type: 'line',
+      data: commonTransactionsFromPrevious
+    }]
+  }
+
+  // console.log(transactionsToShow)
+  // console.log(transactionsToCompare)
+
+  const getPreviousMonthData = () => {
+    setTransactionsIndex(prevIndex => prevIndex - 1)
+  }
+
+  const getNextMonthData = () => {
+    setTransactionsIndex(prevIndex => prevIndex + 1)
+  }
+
+  const changeTheme = () => {
+    setDarkThemeEnabled(!darkThemeEnabled)
+  }
+
+  useEffect(() => {
+    const html = document.documentElement
+    // console.log(darkThemeEnabled);
+
+    html.classList.toggle('dark')
+
+    // window.localStorage.setItem('bank-analytics-dark-theme', darkThemeEnabled)
+  }, [darkThemeEnabled])
+
+  // useEffect(() => {
+  //   const html = document.documentElement
+  //   // const prefersDarkTheme = window.localStorage.getItem('bank-analytics-dark-theme')
+
+  //   // if (prefersDarkTheme) {
+  //   //   html.classList.add('dark')
+  //   // } else {
+  //   //   html.classList.remove('dark')
+  //   // }
+  // }, [darkThemeEnabled])
+
   return (
-    <div className="container">
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+    <div className='relative'>
+      <Header
+        month={months[selectedMonth]}
+        year={selectedYear}
+        isPreviousMonthDisabled={transactionsIndex === 0}
+        isNextMonthDisabled={transactionsIndex === transactions.length - 1}
+        onPreviousMonthClick={getPreviousMonthData}
+        onNextMonthClick={getNextMonthData}
+        darkThemeEnabled={darkThemeEnabled}
+        changeTheme={changeTheme}
+        profileImage={session.profileImage}
+      />
 
-      <main>
-        <h1 className="title">
-          Welcome to <a href="https://nextjs.org">Next.js with MongoDB!</a>
-        </h1>
+      <main className='container mx-auto mt-5 absolut top-0 right-0 pt-24'>
 
-        {isConnected ? (
-          <h2 className="subtitle">You are connected to MongoDB</h2>
-        ) : (
-          <h2 className="subtitle">
-            You are NOT connected to MongoDB. Check the <code>README.md</code>{' '}
-            for instructions.
-          </h2>
-        )}
+        <h1 className='text-3xl mb-2'> Welcome, {session.name.first}! </h1>
+        <h2 className='text-2xl mb-4'> Here are your {months[selectedMonth]} {transactionsToShow.year} transactions' analytics </h2>
 
-        <p className="description">
-          Get started by editing <code>pages/index.js</code>
-        </p>
+        <div className='flex flex-wrap justify-center md:justify-start items-center gap-4'>
+          <NumberBox
+            title='Transactions'
+            value={transactionsToShow.total_transactions}
+            previousValue={transactionsToCompare?.total_transactions}
+            positiveComparisonBad={false}
+            icon={<FontAwesomeIcon icon={faBagShopping} />}
+            hasEuroSymbol={false}
+          />
 
-        <div className="grid">
-          <a href="https://nextjs.org/docs" className="card">
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
+          <NumberBox
+            title='Total expenses'
+            value={transactionsToShow.total_expenses}
+            previousValue={transactionsToCompare?.total_expenses}
+            positiveComparisonBad={true}
+            icon={<FontAwesomeIcon icon={faHandHoldingDollar} />}
+            hasEuroSymbol={true}
+          />
 
-          <a href="https://nextjs.org/learn" className="card">
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
+          <NumberBox
+            title='Total income'
+            value={transactionsToShow.total_income}
+            previousValue={transactionsToCompare?.total_income}
+            positiveComparisonBad={false}
+            icon={<FontAwesomeIcon icon={faCircleDollarToSlot} />}
+            hasEuroSymbol={true}
+          />
 
-          <a
-            href="https://github.com/vercel/next.js/tree/canary/examples"
-            className="card"
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
+          <NumberBox
+            title='Max expense'
+            value={transactionsToShow.max_expense}
+            previousValue={transactionsToCompare?.max_expense}
+            positiveComparisonBad={true}
+            icon={<FontAwesomeIcon icon={faAnglesUp} />}
+            hasEuroSymbol={true}
+          />
 
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className="card"
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+          <NumberBox
+            title='Min expense'
+            value={transactionsToShow.min_expense}
+            previousValue={transactionsToCompare?.min_expense}
+            positiveComparisonBad={true}
+            icon={<FontAwesomeIcon icon={faAnglesDown} />}
+            hasEuroSymbol={true}
+          />
         </div>
+
+        <section className='diagrams mt-16 flex flex-col gap-4 w-full'>
+          <div className='inline-flex flex-col lg:flex-row gap-4'>
+            <ChartContainer
+              title="Transactions per category"
+              options={{
+                chart: {
+                  id: "bar-chart",
+                  foreColor: darkThemeEnabled ? '#fff' : '#000',
+                  toolbar: {
+                    show: false
+                  },
+                },
+                xaxis: {
+                  categories: Object.keys(transactionsToShow.total_transactions_per_category),
+                },
+                tooltip: {
+                  theme: 'dark'
+                },
+                grid: {
+                  strokeDashArray: 5
+                },
+              }}
+              series={[
+                {
+                  name: `${months[selectedMonth]} ${transactionsToShow.year}`,
+                  data: Object.values(transactionsToShow.total_transactions_per_category)
+                }
+              ]}
+              type='bar'
+            />
+
+            <ChartContainer
+              title="Expenses per category"
+              options={{
+                chart: {
+                  id: "pie-chart",
+                },
+                labels: Object.keys(transactionsToShow.total_expenses_per_category),
+                legend: {
+                  position: 'bottom',
+                  labels: {
+                    colors: darkThemeEnabled ? '#fff' : '#000'
+                  }
+                },
+              }}
+              series={Object.values(transactionsToShow.total_expenses_per_category).map(value => Math.abs(value))}
+              type="pie"
+            />
+          </div>
+
+          <div className='inline-flex flex-col lg:flex-row gap-4'>
+            {transactionsToCompare && (
+              <ChartContainer
+                title="Transactions per category comparison"
+                options={{
+                  chart: {
+                    id: "mixed-chart",
+                    foreColor: darkThemeEnabled ? '#fff' : '#000',
+                    toolbar: {
+                      show: false
+                    },
+                  },
+                  xaxis: {
+                    categories: commonTransactionCategories,
+                  },
+                  tooltip: {
+                    theme: 'dark'
+                  },
+                  grid: {
+                    strokeDashArray: 5
+                  },
+                  markers: {
+                    size: 4
+                  },
+                  stroke: {
+                    curve: 'smooth'
+                  },
+                }}
+                series={mixedChartSeries}
+              />
+            )}
+
+            <ChartContainer
+              title="Transactions per category comparison"
+              options={{
+                chart: {
+                  id: "heatmap-chart",
+                  foreColor: darkThemeEnabled ? '#fff' : '#000',
+                  toolbar: {
+                    show: false
+                  },
+                },
+                tooltip: {
+                  theme: darkThemeEnabled ? 'dark' : 'light',
+                },
+              }}
+              series={[{
+                name: "Series 1",
+                data: [{
+                  x: 'W1',
+                  y: 22
+                }, {
+                  x: 'W2',
+                  y: 29
+                }, {
+                  x: 'W3',
+                  y: 13
+                }, {
+                  x: 'W4',
+                  y: 32
+                }]
+              },
+              {
+                name: "Series 2",
+                data: [{
+                  x: 'W1',
+                  y: 43
+                }, {
+                  x: 'W2',
+                  y: 43
+                }, {
+                  x: 'W3',
+                  y: 43
+                }, {
+                  x: 'W4',
+                  y: 43
+                }]
+              }]}
+              type='heatmap'
+            />
+          </div>
+        </section>
+
+        <section className='my-16'>
+          <h2 className='font-bold mb-6'>Detailed Transactions</h2>
+          <div className='h-96 overflow-y-auto p-8 rounded-xl shadow-md hover:shadow-lg' style={{ backgroundColor: 'var(--color-bg-offset)' }}>
+            <table>
+              <thead>
+                <tr>
+                  <th>Index</th>
+                  <th>Type</th>
+                  <th>Category</th>
+                  <th>Description</th>
+                  <th>Date</th>
+                  <th>Comments</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {
+                  transactionsToShow.transactions.map((transaction, index) =>
+                    <tr key={index}>
+                      <td style={{ color: 'var(--color-text-offset)' }}> {++index} </td>
+                      <td>
+                        <div className='rounded-full text-2xl bg-slate-100 dark:bg-slate-700 w-12 h-12 flex justify-center items-center'>
+                          {
+                            parseFloat(transaction.amount) > 0
+                              ? <FontAwesomeIcon icon={faCircleDollarToSlot} />
+                              : <FontAwesomeIcon icon={faHandHoldingDollar} />
+                          }
+                        </div>
+                      </td>
+                      <td> {transaction.category} </td>
+                      <td> {transaction.description} </td>
+                      <td> {transaction.date} </td>
+                      <td> {transaction.comments} </td>
+                      <td> {transaction.amount} € </td>
+                    </tr>
+                  )
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
       </main>
-
-      <footer>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className="logo" />
-        </a>
-      </footer>
-
-      <style jsx>{`
-        .container {
-          min-height: 100vh;
-          padding: 0 0.5rem;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-        }
-
-        main {
-          padding: 5rem 0;
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-        }
-
-        footer {
-          width: 100%;
-          height: 100px;
-          border-top: 1px solid #eaeaea;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-
-        footer img {
-          margin-left: 0.5rem;
-        }
-
-        footer a {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-
-        a {
-          color: inherit;
-          text-decoration: none;
-        }
-
-        .title a {
-          color: #0070f3;
-          text-decoration: none;
-        }
-
-        .title a:hover,
-        .title a:focus,
-        .title a:active {
-          text-decoration: underline;
-        }
-
-        .title {
-          margin: 0;
-          line-height: 1.15;
-          font-size: 4rem;
-        }
-
-        .title,
-        .description {
-          text-align: center;
-        }
-
-        .subtitle {
-          font-size: 2rem;
-        }
-
-        .description {
-          line-height: 1.5;
-          font-size: 1.5rem;
-        }
-
-        code {
-          background: #fafafa;
-          border-radius: 5px;
-          padding: 0.75rem;
-          font-size: 1.1rem;
-          font-family: Menlo, Monaco, Lucida Console, Liberation Mono,
-            DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace;
-        }
-
-        .grid {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-wrap: wrap;
-
-          max-width: 800px;
-          margin-top: 3rem;
-        }
-
-        .card {
-          margin: 1rem;
-          flex-basis: 45%;
-          padding: 1.5rem;
-          text-align: left;
-          color: inherit;
-          text-decoration: none;
-          border: 1px solid #eaeaea;
-          border-radius: 10px;
-          transition: color 0.15s ease, border-color 0.15s ease;
-        }
-
-        .card:hover,
-        .card:focus,
-        .card:active {
-          color: #0070f3;
-          border-color: #0070f3;
-        }
-
-        .card h3 {
-          margin: 0 0 1rem 0;
-          font-size: 1.5rem;
-        }
-
-        .card p {
-          margin: 0;
-          font-size: 1.25rem;
-          line-height: 1.5;
-        }
-
-        .logo {
-          height: 1em;
-        }
-
-        @media (max-width: 600px) {
-          .grid {
-            width: 100%;
-            flex-direction: column;
-          }
-        }
-      `}</style>
-
-      <style jsx global>{`
-        html,
-        body {
-          padding: 0;
-          margin: 0;
-          font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
-            Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
-            sans-serif;
-        }
-
-        * {
-          box-sizing: border-box;
-        }
-      `}</style>
     </div>
   )
 }
 
 export async function getServerSideProps(context) {
+  const session = await getSession({ req: context.req })
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/api/auth/signin',
+        permanent: false,
+      },
+    }
+  }
+
+  const sessionParsed = JSON.parse(session.user.name)
+
   try {
-    await clientPromise
-    // `await clientPromise` will use the default database passed in the MONGODB_URI
-    // However you can use another database (e.g. myDatabase) by replacing the `await clientPromise` with the following code:
-    //
-    // `const client = await clientPromise`
-    // `const db = client.db("myDatabase")`
-    //
-    // Then you can execute queries against your database like so:
-    // db.find({}) or any of the MongoDB Node Driver commands
+    const baseUrl = process.env.NODE_ENV === 'development'
+      ? process.env.DEV_URL
+      : process.env.PROD_URL
+
+    const data = await fetch(`${baseUrl}/api/transactions`, {
+      method: 'POST',
+      body: JSON.stringify({ collectionName: sessionParsed.collectionName }),
+      headers: {
+        'Content-type': 'application/json; charset=UTF-8'
+      }
+    })
+
+    const transactions = await data.json()
 
     return {
-      props: { isConnected: true },
+      props: {
+        isConnected: true,
+        transactions: transactions,
+        session: sessionParsed
+      },
     }
   } catch (e) {
     console.error(e)
