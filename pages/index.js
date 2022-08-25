@@ -1,3 +1,5 @@
+import styles from '../styles/index.module.css'
+
 import NumberBox from '../components/NumberBox'
 import ChartContainer from '../components/ChartContainer'
 import { getSession } from 'next-auth/react'
@@ -27,8 +29,6 @@ export default function Home({ isConnected, transactions, session }) {
     11: "November",
     12: "December"
   }
-
-  console.log(session);
 
   const [darkThemeEnabled, setDarkThemeEnabled] = useState(true)
   const [transactionsIndex, setTransactionsIndex] = useState(transactions.length - 1)
@@ -77,9 +77,6 @@ export default function Home({ isConnected, transactions, session }) {
     }]
   }
 
-  // console.log(transactionsToShow)
-  // console.log(transactionsToCompare)
-
   const getPreviousMonthData = () => {
     setTransactionsIndex(prevIndex => prevIndex - 1)
   }
@@ -96,7 +93,11 @@ export default function Home({ isConnected, transactions, session }) {
     const html = document.documentElement
     // console.log(darkThemeEnabled);
 
-    html.classList.toggle('dark')
+    if (darkThemeEnabled) {
+      html.classList.add('dark')
+    } else {
+      html.classList.remove('dark')
+    }
 
     // window.localStorage.setItem('bank-analytics-dark-theme', darkThemeEnabled)
   }, [darkThemeEnabled])
@@ -124,14 +125,23 @@ export default function Home({ isConnected, transactions, session }) {
         darkThemeEnabled={darkThemeEnabled}
         changeTheme={changeTheme}
         profileImage={session.profileImage}
+        userName={session.name}
       />
 
-      <main className='container mx-auto mt-5 absolut top-0 right-0 pt-24'>
+      <div className="absolute top-0 left-0 right-0">
+        <div className="absolute top-0 overflow-visible opacity-50 dark:opacity-30 left-16">
+          <div className={`mix-blend-multiply absolute w-[800px] h-[900px] rounded-[40rem] ${styles.circleObj}`}></div>
+        </div>
+        
+        <div className="absolute overflow-visible opacity-50 dark:opacity-30 top-28 left-52">
+          <div className={`mix-blend-multiply absolute w-[800px] h-[600px] rounded-[40rem] ${styles.circleObj2}`}></div>
+        </div>
+      </div>
 
-        <h1 className='text-3xl mb-2'> Welcome, {session.name.first}! </h1>
-        <h2 className='text-2xl mb-4'> Here are your {months[selectedMonth]} {transactionsToShow.year} transactions' analytics </h2>
+      <main className='container mx-auto pt-24 relative z-40'>
+        <h1 className='text-3xl my-8'> Viewing analytics of {months[selectedMonth]} {transactionsToShow.year} transactions </h1>
 
-        <div className='flex flex-wrap justify-center md:justify-start items-center gap-4'>
+        <div className='flex flex-wrap justify-center md:justify-start items-center gap-6'>
           <NumberBox
             title='Transactions'
             value={transactionsToShow.total_transactions}
@@ -228,7 +238,7 @@ export default function Home({ isConnected, transactions, session }) {
             />
           </div>
 
-          <div className='inline-flex flex-col lg:flex-row gap-4'>
+          <div className='inline-flex flex-col lg:flex-row-reverse gap-4'>
             {transactionsToCompare && (
               <ChartContainer
                 title="Transactions per category comparison"
@@ -313,7 +323,7 @@ export default function Home({ isConnected, transactions, session }) {
 
         <section className='my-16'>
           <h2 className='font-bold mb-6'>Detailed Transactions</h2>
-          <div className='h-96 overflow-y-auto p-8 rounded-xl shadow-md hover:shadow-lg' style={{ backgroundColor: 'var(--color-bg-offset)' }}>
+          <div className='h-96 overflow-y-auto p-8 rounded-xl glass-bg'>
             <table>
               <thead>
                 <tr>
@@ -333,7 +343,7 @@ export default function Home({ isConnected, transactions, session }) {
                     <tr key={index}>
                       <td style={{ color: 'var(--color-text-offset)' }}> {++index} </td>
                       <td>
-                        <div className='rounded-full text-2xl bg-slate-100 dark:bg-slate-700 w-12 h-12 flex justify-center items-center'>
+                        <div className={`rounded-full text-2xl w-12 h-12 flex justify-center items-center ${styles.tableIcon}`}>
                           {
                             parseFloat(transaction.amount) > 0
                               ? <FontAwesomeIcon icon={faCircleDollarToSlot} />

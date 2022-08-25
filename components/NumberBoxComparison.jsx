@@ -8,19 +8,19 @@ const NumberBoxComparison = ({ previousMonthComparison, positiveComparisonBad })
     let comparisonColor
 
     if (positiveComparisonBad && previousMonthComparison > 0) {
-        comparisonColor = 'text-yellow-400'
+        comparisonColor = 'text-yellow-500 dark:text-yellow-400'
     }
 
     if (!positiveComparisonBad && previousMonthComparison > 0) {
-        comparisonColor = 'text-green-400'
+        comparisonColor = 'text-green-500 dark:text-green-400'
     }
 
     if (positiveComparisonBad && previousMonthComparison < 0) {
-        comparisonColor = 'text-green-400'
+        comparisonColor = 'text-green-500 dark:text-green-400'
     }
 
     if (!positiveComparisonBad && previousMonthComparison < 0) {
-        comparisonColor = 'text-yellow-400'
+        comparisonColor = 'text-yellow-500 dark:text-yellow-400'
     }
 
     return (

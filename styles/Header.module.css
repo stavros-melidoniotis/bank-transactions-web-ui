@@ -1,8 +1,9 @@
 .sideMenu {
-  /* background-color: var(--color-bg-offset); */
-  background: var(--menu-bg);
-  box-shadow: 0 8px 32px 0 var(--menu-shadow);
-  backdrop-filter: blur(7.5px);
-  -webkit-backdrop-filter: blur(7.5px);
   border-radius: 0 0 10px 10px;
+  border: none;
+}
+
+.subMenu {
+  background-color: var(--color-bg-offset);
+  border-radius: 10px;
 }

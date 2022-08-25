@@ -1,0 +1,36 @@
+.circleObj {
+  background: radial-gradient(
+    closest-side,
+    var(--cirle-color),
+    rgba(233, 168, 2, 0)
+  );
+  animation: traverse-up-left 30s ease-in-out infinite alternate;
+  z-index: -1;
+}
+
+.circleObj2 {
+  background: radial-gradient(
+    closest-side,
+    var(--cirle-color),
+    rgba(233, 168, 2, 0)
+  );
+  animation: traverse-up-right 25s ease-in-out infinite alternate;
+  z-index: -1;
+}
+
+@keyframes traverse-up-left {
+  to {
+    transform: translateY(100%) translateX(100%) rotate(180deg);
+  }
+}
+
+@keyframes traverse-up-right {
+  to {
+    transform: translateY(100%) translateX(100%) rotate(1turn);
+  }
+}
+
+.tableIcon {
+  background: var(--icon-bg);
+  box-shadow: var(--icon-shadow);
+}

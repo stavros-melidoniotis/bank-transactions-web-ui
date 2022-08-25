@@ -1,8 +1,16 @@
 .numberBox {
-    background-color: var(--color-bg-offset);
-    transition: box-shadow .2s ease-in;
+  transition: transform 0.25s linear;
+}
+
+.numberBox:hover {
+  transform: translateY(-4px);
+}
+
+.numberBoxIcon {
+  background: var(--icon-bg);
+  box-shadow: var(--icon-shadow)
 }
 
 .numberBoxTitle {
-    color: var(--color-text-offset);
+  color: var(--color-text-offset);
 }

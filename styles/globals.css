@@ -3,21 +3,27 @@
 @tailwind utilities;
 
 :root {
-  --color-bg: #f0f0f0;
+  --color-bg: #d6e5fa;
   --color-bg-offset: #fff;
   --color-text: #212b36;
   --color-text-offset: #788692;
   --menu-bg: rgba(255, 255, 255, 0.5);
-  --menu-shadow: rgba(31, 38, 135, 0.37);
+  --menu-shadow: rgba(31, 38, 135, 0.2);
+  --cirle-color: #40e3a4;
+  --icon-bg: linear-gradient(145deg, #e5f5ff, #c1cee1);
+  --icon-shadow: 5px 5px 10px #b6c3d5, -5px -5px 10px #f6ffff;
 }
 
 html.dark {
   --color-bg: #000;
   --color-bg-offset: #191c24;
-  --color-text: #fff;
+  --color-text: #f8f8f8;
   --color-text-offset: #6c7293;
   --menu-bg: rgba(25, 28, 36, 0.5);
-  --menu-shadow: rgba(31, 38, 135, 0.37);
+  --menu-shadow: rgba(31, 38, 135, 0.2);
+  --cirle-color: #6366f1;
+  --icon-bg: linear-gradient(145deg, #0f1216, #12151a);
+  --icon-shadow: 5px 5px 10px #0e1114, -5px -5px 10px #14171c;
 }
 
 html,
@@ -100,4 +106,12 @@ tr {
     var(--offset-diagonal) var(--offset-diagonal) 0 var(--ray-size),
     calc(var(--offset-diagonal) * -1) var(--offset-diagonal) 0 var(--ray-size),
     var(--offset-diagonal) calc(var(--offset-diagonal) * -1) 0 var(--ray-size);
+}
+
+.glass-bg {
+  background: var(--menu-bg);
+  box-shadow: 0 8px 32px 0 var(--menu-shadow);
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }

@@ -1,5 +1,4 @@
 .chartContainer {
-    background-color: var(--color-bg-offset);
     transition: box-shadow 0.2s ease-in;
 }
 
