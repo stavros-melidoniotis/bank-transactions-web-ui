@@ -7,7 +7,7 @@
   --color-bg-offset: #fff;
   --color-text: #212b36;
   --color-text-offset: #788692;
-  --menu-bg: rgba(255, 255, 255, 0.5);
+  --menu-bg: rgba(255, 255, 255, 0.3);
   --menu-shadow: rgba(31, 38, 135, 0.2);
   --cirle-color: #40e3a4;
   --icon-bg: linear-gradient(145deg, #e5f5ff, #c1cee1);
@@ -19,7 +19,7 @@ html.dark {
   --color-bg-offset: #191c24;
   --color-text: #f8f8f8;
   --color-text-offset: #6c7293;
-  --menu-bg: rgba(25, 28, 36, 0.5);
+  --menu-bg: rgba(25, 28, 36, 0.3);
   --menu-shadow: rgba(31, 38, 135, 0.2);
   --cirle-color: #6366f1;
   --icon-bg: linear-gradient(145deg, #0f1216, #12151a);
@@ -30,7 +30,7 @@ html,
 body {
   padding: 0;
   margin: 0;
-  /* font-family: "Rubik", sans-serif; */
+  font-family: "Poppins", sans-serif;
   overflow-x: hidden;
 }
 
@@ -111,7 +111,7 @@ tr {
 .glass-bg {
   background: var(--menu-bg);
   box-shadow: 0 8px 32px 0 var(--menu-shadow);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(20px);
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
