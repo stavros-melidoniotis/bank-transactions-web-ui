@@ -1,9 +1,10 @@
 .chartContainer {
     transition: box-shadow 0.2s ease-in;
+    width: 50%;
 }
 
-.chartContainer {
-    width: 50%;
+.fullWidth {
+    width: 100%;
 }
 
 @media screen and (max-width: 1024px) {
@@ -13,11 +14,15 @@
 }
 
 @media screen and (min-width: 1300px) {
-    .chartContainer:nth-of-type(odd) {
+    .chartContainer:nth-of-type(odd):not(.fullWidth) {
         width: 60%;
     }
 
     .chartContainer:nth-of-type(even) {
         width: 40%;
+    }
+
+    .chartContainer.fullWidth {
+        width: 100%;
     }
 }

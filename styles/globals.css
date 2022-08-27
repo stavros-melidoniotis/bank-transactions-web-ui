@@ -50,6 +50,10 @@ a {
   box-sizing: border-box;
 }
 
+td {
+  text-align: center;
+}
+
 td,
 th {
   padding: 1rem 0.5rem;
@@ -114,4 +118,8 @@ tr {
   backdrop-filter: blur(20px);
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+option {
+  background-color: var(--color-bg-offset);
 }

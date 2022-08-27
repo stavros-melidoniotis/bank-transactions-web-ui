@@ -4,7 +4,7 @@ import {
     faArrowTrendUp
 } from '@fortawesome/free-solid-svg-icons'
 
-const NumberBoxComparison = ({ previousMonthComparison, positiveComparisonBad }) => {
+const NumberBoxComparison = ({ previousMonthComparison, positiveComparisonBad, hasEuroSymbol }) => {
     let comparisonColor
 
     if (positiveComparisonBad && previousMonthComparison > 0) {
@@ -28,6 +28,7 @@ const NumberBoxComparison = ({ previousMonthComparison, positiveComparisonBad })
             <p className='mr-2 inline-block'>
                 {previousMonthComparison > 0 ? '+' : ''}
                 {previousMonthComparison.toFixed(2)} 
+                {hasEuroSymbol ? ' €' : ''}
             </p>
 
             <FontAwesomeIcon icon={previousMonthComparison > 0 ? faArrowTrendUp : faArrowTrendDown} /> 

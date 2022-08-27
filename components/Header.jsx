@@ -8,11 +8,14 @@ import {
     faAngleRight,
     faArrowRightFromBracket
 } from '@fortawesome/free-solid-svg-icons'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 
 const Header = ({ 
-    month, 
-    year,
+    currentIndex,
+    transactionsMonthAndYear,
+    getDataByIndex,
+    selectedMonth, 
+    selectedYear,
     isPreviousMonthDisabled,
     isNextMonthDisabled,
     onPreviousMonthClick,
@@ -23,6 +26,45 @@ const Header = ({
     userName
 }) => {
     const [submenuVisible, setSubmenuVisible] = useState(false)
+    const [monthPickerVisible, setMonthPickerVisible] = useState(false)
+
+    const transactionMonths = [...new Set(transactionsMonthAndYear.map(option => option.month))]
+    const transactionYears = [...new Set(transactionsMonthAndYear.map(option => option.year))]
+
+    const [availableMonthsToChoose, setAvailableMonthsToChoose] = useState(transactionMonths)
+    const [availableYearsToChoose, setAvailableYearsToChoose] = useState(transactionYears)
+
+    const monthDropdown = useRef(null)
+    const yearDropdown = useRef(null)
+
+    const handleMonthChange = e => {
+        const newMonth = e.target.value
+
+        const newAvailableYears = transactionsMonthAndYear
+                                    .filter(option => option.month === newMonth)
+                                    .map(option => option.year)
+
+        setAvailableYearsToChoose(newAvailableYears)
+    }
+
+    const handleYearChange = e => {
+        const newYear = e.target.value
+
+        const newAvailableMonths = transactionsMonthAndYear
+                                    .filter(option => option.year == newYear)
+                                    .map(option => option.month)
+
+        setAvailableMonthsToChoose(newAvailableMonths)
+    }
+
+    const handleDateSearchClick = () => {
+        const chosenMonth = monthDropdown.current.value
+        const chosenYear = yearDropdown.current.value
+
+        const relatedTransactions = transactionsMonthAndYear.filter(transaction => transaction.month === chosenMonth && transaction.year == chosenYear)[0]
+
+        getDataByIndex(relatedTransactions.index)
+    }
 
     return (
         <header className={`h-20 w-full px-8 fixed top-0 flex items-center border-none z-50 glass-bg ${styles.sideMenu}`}>
@@ -50,7 +92,7 @@ const Header = ({
                     }
                 </div>
 
-                <div className='flex items-center gap-2 mr-4'>
+                <div className='flex items-center gap-2 mr-4 relative'>
                     <button 
                         className={`text-sm ${isPreviousMonthDisabled ? 'invisible' : ''}`}
                         onClick={isPreviousMonthDisabled ? null : onPreviousMonthClick}
@@ -58,7 +100,35 @@ const Header = ({
                         <FontAwesomeIcon icon={faAngleLeft} /> 
                     </button>
 
-                    <span> {month} {year} </span>
+                    <span onClick={() => setMonthPickerVisible(!monthPickerVisible)} className='hover:cursor-pointer'> {selectedMonth} {selectedYear} </span>
+
+                    {
+                        monthPickerVisible && (
+                            <div className='absolute -bottom-16 -left-16 flex gap-4 p-4'>
+                                <select className='glass-bg' onChange={handleMonthChange} defaultValue={selectedMonth} ref={monthDropdown}>
+                                    {transactionMonths.map((month, index) => {
+                                        return (
+                                            <option key={index} value={month}>  
+                                                {month}
+                                            </option>
+                                        )
+                                    })}
+                                </select>
+
+                                <select className='glass-bg' onChange={handleYearChange} defaultValue={selectedYear} ref={yearDropdown}>
+                                    {transactionYears.map((year, index) => {
+                                        return (
+                                            <option key={index} value={year} disabled={!availableYearsToChoose.includes(year)}>  
+                                                {year}
+                                            </option>
+                                        )
+                                    })}
+                                </select>
+
+                                <button onClick={handleDateSearchClick}> Go </button>
+                            </div>
+                        )
+                    }
 
                     <button 
                         className={`text-sm ${isNextMonthDisabled ? 'invisible' : ''}`}

@@ -10,7 +10,8 @@ import {
   faBagShopping,
   faCircleDollarToSlot,
   faAnglesUp,
-  faAnglesDown
+  faAnglesDown,
+  faPiggyBank
 } from '@fortawesome/free-solid-svg-icons'
 import Header from '../components/Header'
 
@@ -30,13 +31,34 @@ export default function Home({ isConnected, transactions, session }) {
     12: "December"
   }
 
+
+  const transactionsMonthAndYear = transactions.map((transaction, index) => ({
+    index: index,
+    month: months[transaction.month],
+    year: transaction.year
+  }))
+
   const [darkThemeEnabled, setDarkThemeEnabled] = useState(true)
   const [transactionsIndex, setTransactionsIndex] = useState(transactions.length - 1)
 
   const selectedMonth = transactions[transactionsIndex].month
   const selectedYear = transactions[transactionsIndex].year
-  const transactionsToShow = transactions.filter(transaction => transaction.month === selectedMonth)[0]
+  const transactionsToShow = transactions.filter(transaction => transaction.month === selectedMonth && transaction.year === selectedYear)[0]
   const transactionsToCompare = transactionsIndex === 0 ? null : transactions.filter(transaction => transaction.month === transactions[transactionsIndex - 1].month)[0]
+
+  const totalDaysInSelectedMonth = new Date(transactionsToShow.year, transactionsToShow.month, 0).getDate()
+  const totalTransactionsPerDayOfMonth = {}
+
+  for (let i = 1; i <= totalDaysInSelectedMonth; i++) {
+    const day = i < 10 ? `0${i}` : i
+    const month = transactionsToShow.month < 10 ? `0${transactionsToShow.month}` : transactionsToShow.month
+
+    totalTransactionsPerDayOfMonth[`${day}/${month}/${selectedYear}`] = 0
+  }
+
+  for (const transaction of transactionsToShow.transactions) {
+    totalTransactionsPerDayOfMonth[transaction.date]++
+  }
 
   let mixedChartSeries
   let commonTransactionCategories
@@ -85,6 +107,10 @@ export default function Home({ isConnected, transactions, session }) {
     setTransactionsIndex(prevIndex => prevIndex + 1)
   }
 
+  const getDataByIndex = index => {
+    setTransactionsIndex(index)
+  }
+
   const changeTheme = () => {
     setDarkThemeEnabled(!darkThemeEnabled)
   }
@@ -116,8 +142,11 @@ export default function Home({ isConnected, transactions, session }) {
   return (
     <div className='relative'>
       <Header
-        month={months[selectedMonth]}
-        year={selectedYear}
+        currentIndex={transactionsIndex}
+        transactionsMonthAndYear={transactionsMonthAndYear}
+        getDataByIndex={getDataByIndex}
+        selectedMonth={months[selectedMonth]}
+        selectedYear={selectedYear}
         isPreviousMonthDisabled={transactionsIndex === 0}
         isNextMonthDisabled={transactionsIndex === transactions.length - 1}
         onPreviousMonthClick={getPreviousMonthData}
@@ -132,19 +161,21 @@ export default function Home({ isConnected, transactions, session }) {
         <div className="absolute top-0 overflow-visible opacity-50 dark:opacity-30 left-16">
           <div className={`mix-blend-multiply absolute w-[800px] h-[900px] rounded-[40rem] ${styles.circleObj}`}></div>
         </div>
-        
+
         <div className="absolute overflow-visible opacity-50 dark:opacity-30 top-28 left-52">
           <div className={`mix-blend-multiply absolute w-[800px] h-[600px] rounded-[40rem] ${styles.circleObj2}`}></div>
         </div>
       </div>
 
       <main className='container mx-auto pt-24 relative z-40'>
-        <h1 className='text-3xl my-8'> Viewing analytics of {months[selectedMonth]} {transactionsToShow.year} transactions </h1>
+        <div className='flex flex-wrap justify-center lg:justify-start items-center gap-6 mt-8'>
+          <div className='hidden lg:block w-72 h-28 p-4'>
+            <h1 className='text-3xl'> {months[selectedMonth]} {selectedYear} analytics </h1>
+          </div>
 
-        <div className='flex flex-wrap justify-center md:justify-start items-center gap-6'>
           <NumberBox
             title='Transactions'
-            value={transactionsToShow.total_transactions}
+            value={Math.ceil(transactionsToShow.total_transactions)}
             previousValue={transactionsToCompare?.total_transactions}
             positiveComparisonBad={false}
             icon={<FontAwesomeIcon icon={faBagShopping} />}
@@ -170,20 +201,11 @@ export default function Home({ isConnected, transactions, session }) {
           />
 
           <NumberBox
-            title='Max expense'
-            value={transactionsToShow.max_expense}
-            previousValue={transactionsToCompare?.max_expense}
-            positiveComparisonBad={true}
-            icon={<FontAwesomeIcon icon={faAnglesUp} />}
-            hasEuroSymbol={true}
-          />
-
-          <NumberBox
-            title='Min expense'
-            value={transactionsToShow.min_expense}
-            previousValue={transactionsToCompare?.min_expense}
-            positiveComparisonBad={true}
-            icon={<FontAwesomeIcon icon={faAnglesDown} />}
+            title='Profit'
+            value={(transactionsToShow.total_income + transactionsToShow.total_expenses).toFixed(2)}
+            previousValue={transactionsToCompare ? (transactionsToCompare?.total_income + transactionsToCompare?.total_expenses).toFixed(2) : null}
+            positiveComparisonBad={false}
+            icon={<FontAwesomeIcon icon={faPiggyBank} />}
             hasEuroSymbol={true}
           />
         </div>
@@ -191,14 +213,17 @@ export default function Home({ isConnected, transactions, session }) {
         <section className='diagrams mt-16 flex flex-col gap-4 w-full'>
           <div className='inline-flex flex-col lg:flex-row gap-4'>
             <ChartContainer
+              id='barChart'
               title="Transactions per category"
               options={{
                 chart: {
-                  id: "bar-chart",
                   foreColor: darkThemeEnabled ? '#fff' : '#000',
                   toolbar: {
                     show: false
                   },
+                  dropShadow: {
+                    enabled: true
+                  }
                 },
                 xaxis: {
                   categories: Object.keys(transactionsToShow.total_transactions_per_category),
@@ -220,10 +245,13 @@ export default function Home({ isConnected, transactions, session }) {
             />
 
             <ChartContainer
+              id='pieChart'
               title="Expenses per category"
               options={{
                 chart: {
-                  id: "pie-chart",
+                  dropShadow: {
+                    enabled: true
+                  }
                 },
                 labels: Object.keys(transactionsToShow.total_expenses_per_category),
                 legend: {
@@ -232,23 +260,33 @@ export default function Home({ isConnected, transactions, session }) {
                     colors: darkThemeEnabled ? '#fff' : '#000'
                   }
                 },
+                tooltip: {
+                  y: {
+                    formatter: val => {
+                      return `-${val} €`
+                    }
+                  }
+                },
               }}
               series={Object.values(transactionsToShow.total_expenses_per_category).map(value => Math.abs(value))}
               type="pie"
             />
           </div>
 
-          <div className='inline-flex flex-col lg:flex-row-reverse gap-4'>
+          <div className='inline-flex flex-col items-center lg:flex-row-reverse lg:justify-between gap-4'>
             {transactionsToCompare && (
               <ChartContainer
-                title="Transactions per category comparison"
+                id='mixedChart'
+                title="Transactions per category (compared to prev. month)"
                 options={{
                   chart: {
-                    id: "mixed-chart",
                     foreColor: darkThemeEnabled ? '#fff' : '#000',
                     toolbar: {
                       show: false
                     },
+                    dropShadow: {
+                      enabled: true
+                    }
                   },
                   xaxis: {
                     categories: commonTransactionCategories,
@@ -270,11 +308,33 @@ export default function Home({ isConnected, transactions, session }) {
               />
             )}
 
+            <div className={`flex flex-col md:flex-row ${transactionsToCompare ? 'lg:flex-col' : ''} my-8 gap-4 items-center justify-center grow`}>
+              <NumberBox
+                title='Max expense'
+                value={transactionsToShow.max_expense}
+                previousValue={transactionsToCompare?.max_expense}
+                positiveComparisonBad={true}
+                icon={<FontAwesomeIcon icon={faAnglesUp} />}
+                hasEuroSymbol={true}
+              />
+
+              <NumberBox
+                title='Min expense'
+                value={transactionsToShow.min_expense}
+                previousValue={transactionsToCompare?.min_expense}
+                positiveComparisonBad={true}
+                icon={<FontAwesomeIcon icon={faAnglesDown} />}
+                hasEuroSymbol={true}
+              />
+            </div>
+          </div>
+
+          <div className='inline-flex'>
             <ChartContainer
-              title="Transactions per category comparison"
+              id='heatmapChart'
+              title="Total transactions per day of month"
               options={{
                 chart: {
-                  id: "heatmap-chart",
                   foreColor: darkThemeEnabled ? '#fff' : '#000',
                   toolbar: {
                     show: false
@@ -284,39 +344,71 @@ export default function Home({ isConnected, transactions, session }) {
                   theme: darkThemeEnabled ? 'dark' : 'light',
                 },
               }}
-              series={[{
-                name: "Series 1",
-                data: [{
-                  x: 'W1',
-                  y: 22
-                }, {
-                  x: 'W2',
-                  y: 29
-                }, {
-                  x: 'W3',
-                  y: 13
-                }, {
-                  x: 'W4',
-                  y: 32
-                }]
-              },
-              {
-                name: "Series 2",
-                data: [{
-                  x: 'W1',
-                  y: 43
-                }, {
-                  x: 'W2',
-                  y: 43
-                }, {
-                  x: 'W3',
-                  y: 43
-                }, {
-                  x: 'W4',
-                  y: 43
-                }]
-              }]}
+              series={[
+                {
+                  name: "Count",
+                  data: Object.entries(totalTransactionsPerDayOfMonth).map(entry => ({ x: entry[0], y: entry[1] }))
+                },
+              ]}
               type='heatmap'
+              height='150px'
+              fullWidth={true}
+            />
+          </div>
+
+          <div className='inline-flex'>
+            <ChartContainer
+              id='areaChart'
+              title="Expenses, Income & Profit"
+              options={{
+                chart: {
+                  foreColor: darkThemeEnabled ? '#fff' : '#000',
+                  toolbar: {
+                    show: false
+                  },
+                  dropShadow: {
+                    enabled: true
+                  }
+                },
+                xaxis: {
+                  categories: transactions.map(transaction => `${months[transaction.month]} ${transaction.year}`),
+                },
+                tooltip: {
+                  theme: 'dark'
+                },
+                dataLabels: {
+                  style: {
+                    fontSize: '16px'
+                  },
+                  formatter: val => {
+                    return `${val} €`
+                  },
+                },
+                legend: {
+                  position: 'top',
+                  horizontalAlign: 'right'
+                }
+              }}
+              series={[
+                {
+                  name: 'Expenses',
+                  type: 'area',
+                  data: transactions.map(transaction => transaction.total_expenses)
+                },
+                {
+                  name: 'Income',
+                  type: 'area',
+                  data: transactions.map(transaction => transaction.total_income)
+                },
+                {
+                  name: 'Profit',
+                  type: 'line',
+                  data: transactions.map(transaction => (transaction.total_income + transaction.total_expenses).toFixed(2))
+                },
+              ]}
+              height='500px'
+              fullWidth={true}
+              type='area'
             />
           </div>
         </section>
@@ -400,7 +492,9 @@ export async function getServerSideProps(context) {
     return {
       props: {
         isConnected: true,
-        transactions: transactions,
+        transactions: transactions
+          .sort((a, b) => a.month - b.month)
+          .sort((a, b) => a.year - b.year),
         session: sessionParsed
       },
     }

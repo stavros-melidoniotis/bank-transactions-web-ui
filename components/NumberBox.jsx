@@ -2,7 +2,14 @@ import styles from '../styles/NumberBox.module.css'
 
 import NumberBoxComparison from './NumberBoxComparison'
 
-const NumberBox = ({ title, value, previousValue, positiveComparisonBad, icon, hasEuroSymbol }) => {
+const NumberBox = ({ 
+    title, 
+    value, 
+    previousValue, 
+    positiveComparisonBad, 
+    icon, 
+    hasEuroSymbol
+}) => {
     const previousMonthComparison = previousValue 
         ? Math.abs(value) - Math.abs(previousValue)
         : 0
@@ -25,6 +32,7 @@ const NumberBox = ({ title, value, previousValue, positiveComparisonBad, icon, h
                         <NumberBoxComparison
                             previousMonthComparison={previousMonthComparison}
                             positiveComparisonBad={positiveComparisonBad}
+                            hasEuroSymbol={hasEuroSymbol}
                         />
                     </div>
                 )
