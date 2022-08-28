@@ -128,7 +128,6 @@ export default function Home({ isConnected, transactions, session }) {
   return (
     <div className='relative'>
       <Header
-        currentIndex={transactionsIndex}
         transactionsMonthAndYear={transactionsMonthAndYear}
         getDataByIndex={getDataByIndex}
         selectedMonth={months[selectedMonth]}
@@ -137,7 +136,6 @@ export default function Home({ isConnected, transactions, session }) {
         isNextMonthDisabled={transactionsIndex === transactions.length - 1}
         onPreviousMonthClick={getPreviousMonthData}
         onNextMonthClick={getNextMonthData}
-        darkThemeEnabled={darkThemeEnabled}
         changeTheme={changeTheme}
         profileImage={session.profileImage}
         userName={session.name}
@@ -153,7 +151,7 @@ export default function Home({ isConnected, transactions, session }) {
         </div>
       </div>
 
-      <main className='container mx-auto pt-24 relative z-40'>
+      <main className='container mx-auto pt-24 relative z-40 px-4 md:px-0'>
         <div className='flex flex-wrap justify-center lg:justify-start items-center gap-6 mt-8'>
           <div className='hidden lg:block w-72 h-28 p-4'>
             <h1 className='text-3xl'> {months[selectedMonth]} {selectedYear} analytics </h1>

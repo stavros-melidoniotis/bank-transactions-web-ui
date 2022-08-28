@@ -3,7 +3,8 @@
   border: none;
 }
 
-.subMenu {
+.subMenu,
+.monthPicker {
   background-color: var(--color-bg-offset);
   border-radius: 10px;
 }

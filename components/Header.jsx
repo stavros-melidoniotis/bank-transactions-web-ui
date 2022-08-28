@@ -11,7 +11,6 @@ import {
 import { useState, useRef } from 'react'
 
 const Header = ({ 
-    currentIndex,
     transactionsMonthAndYear,
     getDataByIndex,
     selectedMonth, 
@@ -20,7 +19,6 @@ const Header = ({
     isNextMonthDisabled,
     onPreviousMonthClick,
     onNextMonthClick,
-    darkThemeEnabled,
     changeTheme,
     profileImage,
     userName
@@ -31,7 +29,6 @@ const Header = ({
     const transactionMonths = [...new Set(transactionsMonthAndYear.map(option => option.month))]
     const transactionYears = [...new Set(transactionsMonthAndYear.map(option => option.year))]
 
-    const [availableMonthsToChoose, setAvailableMonthsToChoose] = useState(transactionMonths)
     const [availableYearsToChoose, setAvailableYearsToChoose] = useState(transactionYears)
 
     const monthDropdown = useRef(null)
@@ -45,16 +42,7 @@ const Header = ({
                                     .map(option => option.year)
 
         setAvailableYearsToChoose(newAvailableYears)
-    }
-
-    const handleYearChange = e => {
-        const newYear = e.target.value
-
-        const newAvailableMonths = transactionsMonthAndYear
-                                    .filter(option => option.year == newYear)
-                                    .map(option => option.month)
-
-        setAvailableMonthsToChoose(newAvailableMonths)
+        yearDropdown.current.value = newAvailableYears[0]
     }
 
     const handleDateSearchClick = () => {
@@ -70,7 +58,11 @@ const Header = ({
         <header className={`h-20 w-full px-8 fixed top-0 flex items-center border-none z-50 glass-bg ${styles.sideMenu}`}>
             <div className='container mx-auto flex items-center gap-4'>
                 <div className='grow relative'>
-                    <button onClick={() => setSubmenuVisible(!submenuVisible)}>
+                    <button onClick={
+                        () => {
+                            setMonthPickerVisible(false)
+                            setSubmenuVisible(!submenuVisible)
+                        }}>
                         <Image
                             src={profileImage}
                             alt="Avatar"
@@ -100,12 +92,19 @@ const Header = ({
                         <FontAwesomeIcon icon={faAngleLeft} /> 
                     </button>
 
-                    <span onClick={() => setMonthPickerVisible(!monthPickerVisible)} className='hover:cursor-pointer'> {selectedMonth} {selectedYear} </span>
+                    <span onClick={
+                        () => {
+                            setSubmenuVisible(false)
+                            setMonthPickerVisible(!monthPickerVisible)
+                        }} 
+                        className='hover:cursor-pointer'> 
+                        {selectedMonth} {selectedYear} 
+                    </span>
 
                     {
                         monthPickerVisible && (
-                            <div className='absolute -bottom-16 -left-16 flex gap-4 p-4'>
-                                <select className='glass-bg' onChange={handleMonthChange} defaultValue={selectedMonth} ref={monthDropdown}>
+                            <div className={`fixed -bottom-20 left-[50%] -translate-x-[50%] md:absolute md:-bottom-24 md:left-0 flex gap-4 p-4 ${styles.monthPicker}`}>
+                                <select className='glass-bg p-2' onChange={handleMonthChange} defaultValue={selectedMonth} ref={monthDropdown}>
                                     {transactionMonths.map((month, index) => {
                                         return (
                                             <option key={index} value={month}>  
@@ -115,7 +114,7 @@ const Header = ({
                                     })}
                                 </select>
 
-                                <select className='glass-bg' onChange={handleYearChange} defaultValue={selectedYear} ref={yearDropdown}>
+                                <select className='glass-bg p-2' defaultValue={selectedYear} ref={yearDropdown}>
                                     {transactionYears.map((year, index) => {
                                         return (
                                             <option key={index} value={year} disabled={!availableYearsToChoose.includes(year)}>  
