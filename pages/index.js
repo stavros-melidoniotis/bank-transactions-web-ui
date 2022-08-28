@@ -15,6 +15,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
+import Head from 'next/head'
 
 export default function Home({ isConnected, transactions, session }) {
   const months = {
@@ -127,6 +128,10 @@ export default function Home({ isConnected, transactions, session }) {
 
   return (
     <div className='relative'>
+      <Head>
+        <title>Transaction Analytics - {session.name.first} {session.name.last}</title>
+      </Head>
+
       <Header
         transactionsMonthAndYear={transactionsMonthAndYear}
         getDataByIndex={getDataByIndex}
@@ -137,7 +142,7 @@ export default function Home({ isConnected, transactions, session }) {
         onPreviousMonthClick={getPreviousMonthData}
         onNextMonthClick={getNextMonthData}
         changeTheme={changeTheme}
-        profileImage={session.profileImage}
+        profileImage={session.profileImage ?? '/user.png'}
         userName={session.name}
       />
 
@@ -400,7 +405,7 @@ export default function Home({ isConnected, transactions, session }) {
         <section className='my-16'>
           <h2 className='font-bold mb-6'>Detailed Transactions</h2>
           <div className='h-96 overflow-y-auto p-8 rounded-xl glass-bg'>
-            <table>
+            <table className='w-full'>
               <thead>
                 <tr>
                   <th>Index</th>

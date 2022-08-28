@@ -69,6 +69,7 @@ const Header = ({
                             width={50}
                             height={50}
                             className='rounded-full'
+                            objectFit='cover'
                         />
                     </button>
 
