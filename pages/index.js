@@ -14,6 +14,7 @@ import {
   faPiggyBank
 } from '@fortawesome/free-solid-svg-icons'
 import Header from '../components/Header'
+import Footer from '../components/Footer'
 
 export default function Home({ isConnected, transactions, session }) {
   const months = {
@@ -30,7 +31,6 @@ export default function Home({ isConnected, transactions, session }) {
     11: "November",
     12: "December"
   }
-
 
   const transactionsMonthAndYear = transactions.map((transaction, index) => ({
     index: index,
@@ -117,27 +117,13 @@ export default function Home({ isConnected, transactions, session }) {
 
   useEffect(() => {
     const html = document.documentElement
-    // console.log(darkThemeEnabled);
 
     if (darkThemeEnabled) {
       html.classList.add('dark')
     } else {
       html.classList.remove('dark')
     }
-
-    // window.localStorage.setItem('bank-analytics-dark-theme', darkThemeEnabled)
   }, [darkThemeEnabled])
-
-  // useEffect(() => {
-  //   const html = document.documentElement
-  //   // const prefersDarkTheme = window.localStorage.getItem('bank-analytics-dark-theme')
-
-  //   // if (prefersDarkTheme) {
-  //   //   html.classList.add('dark')
-  //   // } else {
-  //   //   html.classList.remove('dark')
-  //   // }
-  // }, [darkThemeEnabled])
 
   return (
     <div className='relative'>
@@ -456,6 +442,8 @@ export default function Home({ isConnected, transactions, session }) {
           </div>
         </section>
       </main>
+
+      <Footer />
     </div>
   )
 }
