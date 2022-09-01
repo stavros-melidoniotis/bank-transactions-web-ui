@@ -16,6 +16,7 @@ import {
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import Head from 'next/head'
+import TotalBox from '../components/TotalBox'
 
 export default function Home({ isConnected, transactions, session }) {
   const months = {
@@ -45,8 +46,17 @@ export default function Home({ isConnected, transactions, session }) {
   const selectedMonth = transactions[transactionsIndex].month
   const selectedYear = transactions[transactionsIndex].year
   const transactionsToShow = transactions.filter(transaction => transaction.month === selectedMonth && transaction.year === selectedYear)[0]
-  const transactionsToCompare = transactionsIndex === 0 ? null : transactions.filter(transaction => transaction.month === transactions[transactionsIndex - 1].month)[0]
 
+  let transactionsToCompare 
+  
+  if (transactionsIndex === 0) {
+    transactionsToCompare = null 
+  } else {
+    const date = new Date(selectedYear, selectedMonth - 2, 1)
+
+    transactionsToCompare = transactions.filter(transaction => transaction.month === date.getMonth() + 1 && transaction.year === date.getFullYear())[0]
+  }
+  
   const totalDaysInSelectedMonth = new Date(transactionsToShow.year, transactionsToShow.month, 0).getDate()
   const totalTransactionsPerDayOfMonth = {}
 
@@ -55,6 +65,14 @@ export default function Home({ isConnected, transactions, session }) {
     const month = transactionsToShow.month < 10 ? `0${transactionsToShow.month}` : transactionsToShow.month
 
     totalTransactionsPerDayOfMonth[`${day}/${month}/${selectedYear}`] = 0
+  }
+
+  let overallIncome = 0, overallExpenses = 0, overallProfit = 0
+
+  for (const transaction of transactions) {
+    overallExpenses += transaction.total_expenses
+    overallIncome += transaction.total_income
+    overallProfit += transaction.total_income + transaction.total_expenses
   }
 
   for (const transaction of transactionsToShow.transactions) {
@@ -400,6 +418,23 @@ export default function Home({ isConnected, transactions, session }) {
               type='area'
             />
           </div>
+        </section>
+
+        <section className='totals flex flex-col md:flex-row justify-between gap-4 my-8'>
+          <TotalBox
+            title="Overall income"
+            value={overallIncome}
+          />
+
+          <TotalBox
+            title="Overall expenses"
+            value={overallExpenses}
+          />
+
+          <TotalBox
+            title="Overall profit"
+            value={overallProfit}
+          />
         </section>
 
         <section className='my-16'>
