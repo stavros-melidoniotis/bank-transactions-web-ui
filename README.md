@@ -17,7 +17,7 @@ Each month's transactions are being exported into a tsv file. This file is then 
 
 ## Demo
 
-To see a live version of this project visit the [app](https://bank-transactions.vercel.app/) and login with:
+To see a live version of this project visit the [app](https://bank-transactions.melidon.dev/) and login with:
 - username: ```demo```
 - password: ```super-secret-passw0rd```
 
